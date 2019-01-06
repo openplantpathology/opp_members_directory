@@ -230,18 +230,20 @@ map
 library(plotly)
 library(hrbrthemes)
 
+hrbrthemes::import_roboto_condensed()
+
 # sort domains so that we don't have duplicates in different orders
 members$domain <- sapply(strsplit(as.character(members$domain), ", "),
                          function(x) paste(x, collapse = " &\n"))
 
-p <- members %>% # we use the original dataframe from Google here
-  na.omit() %>%
-  ggplot(aes(domain)) +
-  geom_bar(aes(fill = domain)) +
-  theme_ipsum_rc() +
-  theme(axis.text.x = element_blank(),
-        legend.title = element_blank()) +
-  labs(y = "Number of Members",
+p <- members %>% 
+  ggplot(aes(domain, fill = domain)) +
+  geom_bar() +
+  theme_minimal() +
+  theme(legend.position = "right", axis.text.x = element_blank()) +
+  labs(fill = "Domain",
+       y = "Number of Members",
+       x = "",
        title = "Members acting in up to two domains")
 (gg <- ggplotly(p))
 ```
