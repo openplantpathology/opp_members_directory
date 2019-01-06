@@ -27,7 +27,8 @@ members <-
 
 # prepare the dataset for table, plot and map
 library(tidyverse)
-members6 <- members %>%
+members <- 
+  members %>%
   unite(geo,
         location,
         state,
@@ -59,7 +60,7 @@ members6 <- members %>%
     orcid
   )
 
-members6$domain <- str_replace_all(members6$domain, pattern = ", $", "")
+members$domain <- str_replace_all(members$domain, pattern = ", $", "")
 
 # geocode locations
 library(googleway)
@@ -69,27 +70,29 @@ set_key("GOOGLE_API_KEY")
 locations <-
   as.list(
     paste(
-      members6$institution,
-      members6$location,
-      members6$state,
-      members6$country,
+      members$institution,
+      members$location,
+      members$state,
+      members$country,
       sep = ", "
     )
   )
+names(locations) <- members$name
 
 # geocode locations using googleway using all location vars
 locations <- lapply(locations, google_geocode, key = GOOGLE_API_KEY)
 
 # unnest the lists and extract only the necessary lat/lng values
+# some return more than set of coordinates, take only first row of each
 x <- vector("list", length = length(locations))
 for (i in 1:length(locations)) {
-  x[[i]] <- locations[[i]]$results$geometry$location
+  x[[i]] <- locations[[i]]$results$geometry$location[1, ]
 }
 # create a dataframe of lat/lng values
 x <- dplyr::bind_rows(x)
 
 # join locations with members list
-members6 <- data.frame(existing_members, x)
+members <- data.frame(members, x)
 ```
 
 Column {data-width=700px}
@@ -102,7 +105,7 @@ Column {data-width=700px}
 # dynamic table using DT package
 
 library(DT)
-members66 <- members6 %>%
+members_table <- members %>%
   select(name,
          role,
          domain,
@@ -116,7 +119,7 @@ members66 <- members6 %>%
 # we do not need to show lat and long here
 
 datatable(
-  members66,
+  members_table,
   escape = FALSE,
   rownames = FALSE,
   colnames = c(
@@ -167,14 +170,14 @@ Column {}
 ```{r echo=FALSE}
 library(leaflet)
 
-members6 <- na.omit(members6)
+members <- na.omit(members)
 
 pal <-
   colorFactor(c("#339933", "steelblue"),
               domain = c("Leadership", "Member"))
 
-getColor <- function(members6) {
-  lapply(members6$role, function(role) {
+getColor <- function(members) {
+  lapply(members$role, function(role) {
     if (role == "Leadership") {
       "green"
     } else if (role == "Member") {
@@ -187,22 +190,21 @@ icons <- awesomeIcons(
   iconColor = "black",
   library = "fa",
   squareMarker = TRUE,
-  markerColor = getColor(members6)
+  markerColor = getColor(members)
 )
-library(magrittr)
 
-map <- leaflet(members6) %>%
+map <- leaflet(members) %>%
   setView(lng = 0, lat = 5, zoom = 1) %>%
   addTiles(urlTemplate = "https://mts1.google.com/vt/lyrs=r&hl=en&src=app&x={x}&y={y}&z={z}&s=G", attribution = "Google") %>%
   addAwesomeMarkers(
-    ~lon,
+    ~lng,
     ~lat,
     icon = icons,
-    label = paste(members6$name, "- click for details"),
-    popup = paste("<b>", members6$name, "</b><br>",
-                  members6$institution, "<br>",
-                  members6$location, ",", members6$country, "<br>",
-                  "Domain(s):", members6$domain, "<br>"),
+    label = paste(members$name, "- click for details"),
+    popup = paste("<b>", members$name, "</b><br>",
+                  members$institution, "<br>",
+                  members$location, ",", members$country, "<br>",
+                  "Domain(s):", members$domain, "<br>"),
     clusterOptions = markerClusterOptions(),
   ) %>%
   addLegend(
@@ -228,15 +230,18 @@ map
 library(plotly)
 library(hrbrthemes)
 
+# sort domains so that we don't have duplicates in different orders
+members$domain <- sapply(strsplit(as.character(members$domain), ", "),
+                         function(x) paste(sort(x), collapse = " &\n"))
+
 p <- members %>% # we use the original dataframe from Google here
-  select(domain1, domain2) %>%
-  gather(domain) %>%
-  select(value) %>%
   na.omit() %>%
-  ggplot(aes(value, fill = value)) +
-  geom_bar() +
+  ggplot(aes(domain)) +
+  geom_bar(aes(fill = domain)) +
   theme_ipsum_rc() +
-  theme(legend.position = "right", axis.text.x = element_blank()) +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        legend.title = element_blank()) +
   labs(fill = "Domain",
        y = "Number of Members",
        x = "",
