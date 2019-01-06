@@ -237,6 +237,7 @@ p <- members %>% # we use the original dataframe from Google here
   na.omit() %>%
   ggplot(aes(domain)) +
   geom_bar(aes(fill = domain)) +
+  theme_minimal() +
   theme(axis.text.x = element_blank(),
         legend.title = element_blank()) +
   labs(y = "Number of Members",
