@@ -228,9 +228,6 @@ map
 
 ```{r echo=FALSE}
 library(plotly)
-library(hrbrthemes)
-
-hrbrthemes::import_roboto_condensed()
 
 # sort domains so that we don't have duplicates in different orders
 members$domain <- sapply(strsplit(as.character(members$domain), ", "),
