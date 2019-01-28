@@ -11,8 +11,6 @@ output:
 
 ---
 
-<link rel="stylesheet" href="fontawesome.min.css">
-
 ```{r include=FALSE}
 # load encrypted API key
 GOOGLE_API_KEY <- Sys.getenv("GOOGLE_API_KEY")
@@ -42,7 +40,8 @@ members <-
     homepage = "",
     twitter = "",
     github = "",
-    orcid = ""
+    orcid = "",
+    researchgate = "",
   )) %>%
   unite(domain, domain1, domain2, remove = T, sep = ", ") %>%
   unite(name, first_name, middle_name, last_name, sep = " ") %>%
@@ -57,7 +56,8 @@ members <-
     homepage,
     twitter,
     github,
-    orcid
+    orcid,
+    researchgate
   )
 
 members$domain <- str_replace_all(members$domain, pattern = ", $", "")
@@ -110,13 +110,74 @@ members_table <- members %>%
          role,
          domain,
          institution,
-         country
-         # homepage,
-         # twitter,
-         # github,
-         # orcid
+         country,
+         homepage,
+         twitter,
+         github
   )
 # we do not need to show lat and long here
+
+# construct external links and icons to go with names
+# website links
+members_table$homepage2 <-
+  paste0(
+    "<a href = '",
+    members_table$homepage,
+    "'><i class='fa fa-link aria-hidden=TRUE'></i></a>"
+  )
+members_table$homepage2[members_table$homepage == ""] <- ""
+
+# orcid links (need to authenticate ORCID links per,
+# https://orcid.org/trademark-and-id-display-guidelines#02-a)
+
+#members_table$orcid2 <-
+#  paste0(
+#    "<a href = '",
+#    members_table$orcid,
+#    "'><i class='ai ai-orcid', style='margin-left:5px;'></i></a>"
+#  )
+#members_table$orcid2[is.na(members_table$orcid)] <- ""
+
+# twitter links
+members_table$twitter2 <-
+  paste0(
+    "<a href = '",
+    members_table$twitter,
+    "'><i class='fa fa-twitter', style='color:#1da1f2;margin-left:5px;'></i></a>"
+  )
+members_table$twitter2[members_table$twitter == ""] <- ""
+
+# github links
+members_table$github2 <-
+  paste0(
+    "<a href = '",
+    members_table$github,
+    "'><i class='fa fa-github'; style='color:#000000;margin-left:5px;'></i></a>"
+  )
+members_table$github2[members_table$github == ""] <- ""
+
+# add links to `names` column
+members_table$name <- 
+  paste0(
+    members_table$name,
+    "<br>",
+    members_table$homepage2,
+    #members_table$orcid2,
+    members_table$twitter2,
+    members_table$github2
+  )
+
+members_table <-
+  select(members_table,
+    -c(
+      "homepage",
+      "homepage2",
+      "twitter",
+      "twitter2",
+      "github",
+      "github2"
+    )
+  )
 
 datatable(
   members_table,
@@ -128,10 +189,6 @@ datatable(
     "Domain(s)",
     "Institution",
     "Country"
-    # "Homepage",
-    # "Twitter",
-    # "GitHub",
-    # "orcid"
   ),
   class = "cell-border stripe",
   options = list(
@@ -152,10 +209,6 @@ datatable(
       "domain",
       "institution",
       "country"
-      # "homepage",
-      # "twitter",
-      # "github",
-      # "orcid"
     ),
     fontSize = "90%")
 ```
