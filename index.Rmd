@@ -123,6 +123,7 @@ members_table <- members %>%
          homepage,
          twitter,
          github,
+         orcid,
          researchgate,
          googlescholar
   )
