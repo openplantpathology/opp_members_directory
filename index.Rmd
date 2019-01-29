@@ -133,7 +133,7 @@ members_table$homepage2 <-
   paste0(
     "<a href = '",
     members_table$homepage,
-    "'><i class='fa fa-link aria-hidden=TRUE'></i></a>"
+    "'><i class='fa fa-link aria-hidden=TRUE', style='margin:4px;'></i></a>"
   )
 members_table$homepage2[members_table$homepage == ""] <- ""
 
@@ -179,8 +179,8 @@ members_table$github2[members_table$github == ""] <- ""
 members_table$researchgate2 <-
   paste0(
     "<a href = '",
-    members_table$github,
-    "'><i class='fa fa-github'; style='color:#000000;margin:4px;'></i></a>"
+    members_table$researchgate,
+    "'><i class='ai ai-researchgate'; style='color:#21CBbb;margin:4px;'></i></a>"
   )
 members_table$researchgate2[members_table$researchgate == ""] <- ""
 
@@ -202,7 +202,8 @@ members_table$name <-
     members_table$orcid2,
     members_table$twitter2,
     members_table$github2,
-    members_table$googlescholar2
+    members_table$googlescholar2,
+    members_table$researchgate2
   )
 
 # drop extra columns now that the info is in `name`
@@ -214,7 +215,10 @@ members_table <-
       "twitter",
       "twitter2",
       "github",
-      "github2"
+      "github2",
+      "googlescholar2",
+      "googlescholar",
+      "researchgate"
     )
   )
 
@@ -223,7 +227,7 @@ datatable(
   escape = FALSE,
   rownames = FALSE,
   colnames = c(
-    "Name",
+    "Member",
     "Role",
     "Domain(s)",
     "Institution",
