@@ -11,6 +11,13 @@ output:
 
 ---
 
+```{r echo=FALSE}
+knitr::asis_output(htmltools::htmlPreserve("
+<link rel='stylesheet' href='https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css'>
+"))
+```
+
+
 ```{r include=FALSE}
 # load encrypted API key
 GOOGLE_API_KEY <- Sys.getenv("GOOGLE_API_KEY")
@@ -42,6 +49,7 @@ members <-
     github = "",
     orcid = "",
     researchgate = "",
+    googlescholar = ""
   )) %>%
   unite(domain, domain1, domain2, remove = T, sep = ", ") %>%
   unite(name, first_name, middle_name, last_name, sep = " ") %>%
@@ -57,7 +65,8 @@ members <-
     twitter,
     github,
     orcid,
-    researchgate
+    researchgate,
+    googlescholar
   )
 
 members$domain <- str_replace_all(members$domain, pattern = ", $", "")
@@ -113,9 +122,10 @@ members_table <- members %>%
          country,
          homepage,
          twitter,
-         github
+         github,
+         researchgate,
+         googlescholar
   )
-# we do not need to show lat and long here
 
 # construct external links and icons to go with names
 # website links
@@ -127,23 +137,32 @@ members_table$homepage2 <-
   )
 members_table$homepage2[members_table$homepage == ""] <- ""
 
+# researchgate links
+members_table$researchgate2 <-
+  paste0(
+    "<a href = '",
+    members_table$researchgate,
+    "'><i class='ai ai-researchgate aria-hidden=TRUE; style='color:#21CBBB;margin:4px'></i></a>"
+  )
+members_table$researchgate2[members_table$researchgate == ""] <- ""
+
 # orcid links (need to authenticate ORCID links per,
 # https://orcid.org/trademark-and-id-display-guidelines#02-a)
 
-#members_table$orcid2 <-
-#  paste0(
-#    "<a href = '",
-#    members_table$orcid,
-#    "'><i class='ai ai-orcid', style='margin-left:5px;'></i></a>"
-#  )
-#members_table$orcid2[is.na(members_table$orcid)] <- ""
+members_table$orcid2 <-
+  paste0(
+    "<a href = '",
+    members_table$orcid,
+    "'><i class='ai ai-orcid', style='color:#A6CE39;margin:4px;'></i></a>"
+  )
+members_table$orcid2[is.na(members_table$orcid)] <- ""
 
 # twitter links
 members_table$twitter2 <-
   paste0(
     "<a href = '",
     members_table$twitter,
-    "'><i class='fa fa-twitter', style='color:#1da1f2;margin-left:5px;'></i></a>"
+    "'><i class='fa fa-twitter', style='color:#1da1f2;margin:4px;'></i></a>"
   )
 members_table$twitter2[members_table$twitter == ""] <- ""
 
@@ -152,9 +171,27 @@ members_table$github2 <-
   paste0(
     "<a href = '",
     members_table$github,
-    "'><i class='fa fa-github'; style='color:#000000;margin-left:5px;'></i></a>"
+    "'><i class='fa fa-github'; style='color:#000000;margin:4px;'></i></a>"
   )
 members_table$github2[members_table$github == ""] <- ""
+
+# ResearchGate links
+members_table$researchgate2 <-
+  paste0(
+    "<a href = '",
+    members_table$github,
+    "'><i class='fa fa-github'; style='color:#000000;margin:4px;'></i></a>"
+  )
+members_table$researchgate2[members_table$researchgate == ""] <- ""
+
+# Google Scholar links
+members_table$googlescholar2 <-
+  paste0(
+    "<a href = '",
+    members_table$googlescholar,
+    "'><i class='ai ai-google-scholar'; style='color:#404CC9;margin:4px;'></i></a>"
+  )
+members_table$googlescholar2[members_table$googlescholar == ""] <- ""
 
 # add links to `names` column
 members_table$name <- 
@@ -162,11 +199,13 @@ members_table$name <-
     members_table$name,
     "<br>",
     members_table$homepage2,
-    #members_table$orcid2,
+    members_table$orcid2,
     members_table$twitter2,
-    members_table$github2
+    members_table$github2,
+    members_table$googlescholar2
   )
 
+# drop extra columns now that the info is in `name`
 members_table <-
   select(members_table,
     -c(
