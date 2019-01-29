@@ -70,7 +70,7 @@ members <-
   )
 
 members$domain <- str_replace_all(members$domain, pattern = ", $", "")
-members$institution <- members$institution[is.na(members$institution)] <- ""
+members$institution[is.na(members$institution)] <- ""
   
 
 # geocode locations
@@ -131,8 +131,6 @@ c25 <- c("dodgerblue2",
          "yellow3",
          "darkorange4",
          "brown")
-
-
 ```
 
 Column {data-width=700px}
