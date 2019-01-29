@@ -15,6 +15,24 @@ output:
 knitr::asis_output(htmltools::htmlPreserve("
 <link rel='stylesheet' href='https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css'>
 "))
+
+`%notin%` <- function(x, table) {
+  # Same as !(x %in% table)
+  match(x, table, nomatch = 0L) == 0L
+}
+
+domains <- c("Embedded Systems",
+             "Epidemiology",
+             "Fungal Biology",
+             "Genomics",
+             "Microbial Ecology",
+             "Modeling",
+             "Plant Ecology",
+             "Plant Pathology",
+             "Population Biology",
+             "Programming",
+             "Remote Sensing")
+
 ```
 
 
@@ -70,8 +88,13 @@ members <-
   )
 
 members$domain <- str_replace_all(members$domain, pattern = ", $", "")
+
+# check if someone didn't use the dropdown and replace with blank
+if ("members$domain" %notin% domains) {
+  members$domain <- str_replace_all(members$domain, pattern = ", $", "")
+}
+
 members$institution[is.na(members$institution)] <- ""
-  
 
 # geocode locations
 library(googleway)
@@ -105,32 +128,6 @@ x <- dplyr::bind_rows(x)
 # join locations with members list
 members <- data.frame(members, x)
 
-# custom colour pallete for domain chart
-
-c25 <- c("dodgerblue2",
-         "#E31A1C", # red
-         "green4",
-         "#6A3D9A", # purple
-         "#FF7F00", # orange
-         "black","gold1",
-         "skyblue2",
-         "#FB9A99", # lt pink
-         "palegreen2",
-         "#CAB2D6", # lt purple
-         "#FDBF6F", # lt orange
-         "gray70",
-         "khaki2",
-         "maroon",
-         "orchid1",
-         "deeppink1",
-         "blue1",
-         "steelblue4",
-         "darkturquoise",
-         "green1",
-         "yellow4",
-         "yellow3",
-         "darkorange4",
-         "brown")
 ```
 
 Column {data-width=700px}
@@ -361,7 +358,6 @@ members$domain <- sapply(strsplit(as.character(members$domain), ", "),
 p <- members %>% 
   ggplot(aes(domain, fill = domain)) +
   geom_bar() +
-  scale_fill_manual(values = c25) +
   theme_minimal() +
   theme(legend.position = "right", axis.text.x = element_blank()) +
   labs(fill = "Domain",
