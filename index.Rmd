@@ -70,6 +70,8 @@ members <-
   )
 
 members$domain <- str_replace_all(members$domain, pattern = ", $", "")
+members$institution <- members$institution[is.na(members$institution)] <- ""
+  
 
 # geocode locations
 library(googleway)
